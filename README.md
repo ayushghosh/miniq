@@ -3,10 +3,12 @@
 ##Install
 
 clone
-composer install
-copy example.env.php to env.php
-update env.php
 
+composer install
+
+copy example.env.php to env.php
+
+update env.php
 
 visit /install
 
@@ -21,6 +23,10 @@ console/daemon.php
 
 
 API DOC
+
+End Point
+
+http://miniq.ayush.me
 
 ### Add Queue
 
