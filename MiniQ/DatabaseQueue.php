@@ -9,12 +9,7 @@
 
         protected $queue;
 
-        /**
-         * DatabaseQueue constructor.
-         * @param $connection
-         * @param $queue_table
-         * @param $jobs_table
-         */
+        
         public function __construct($connection, $queue_table, $jobs_table)
         {
             $this->connection  = $connection;
@@ -216,7 +211,6 @@
                 $this->connection->commit();
 
                 return $job;
-//                return $this->connection->table($this->jobs_table)->whereIn('id', $jobs)->get();
             }
 
             $this->connection->commit();
@@ -231,7 +225,6 @@
                 ->where('queue_id', $queue->id)
                 ->where(function ($query) use ($queue) {
                     $this->isAvailable($queue, $query);
-//                    $this->isReservedButExpired($query);
                 })
                 ->orderBy('id', 'asc')
                 ->first();
@@ -248,16 +241,6 @@
                 $query->whereRaw('retries <= max_retries');
             });
         }
-
-//        protected function isReservedButExpired($query)
-//        {
-//            $expiration = \Carbon\Carbon::now()->subSeconds(90)->getTimestamp();
-//            dd($expiration);
-//
-//            $query->orWhere(function ($query) use ($expiration) {
-//                $query->where('reserved_at', '<=', $expiration);
-//            });
-//        }
 
         protected function markReserved($queue, $job)
         {

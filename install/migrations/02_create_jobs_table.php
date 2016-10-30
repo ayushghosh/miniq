@@ -2,7 +2,6 @@
 
     if(db()->getSchemaBuilder()->hasTable('jobs'))
     {
-//        echo "Table jobs exist".PHP_EOL;
         return;
     }
     db()->getSchemaBuilder()->create('jobs', function ($table) {

@@ -58,11 +58,6 @@
         {
             self::$response->code($code);
             self::$response->json($data);
-//            if ($is_json) {
-//                header('Content-Type: application/json', true, $code);
-//            }
-//            echo json_encode($data);
-            die();
         }
 
         public static function respondSuccess($message)

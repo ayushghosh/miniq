@@ -66,7 +66,6 @@
                 $file_name      = basename($file, '.php');
                 $config_in_file = require($file);
                 foreach ($config_in_file as $config_name => $config_value) {
-//                    var_dump($file_name.'.'.$config_name);
                     $configs[$file_name . '.' . $config_name] = $config_value;
                 }
                 $config_in_file = [];
@@ -79,7 +78,6 @@
         public static function load_routes()
         {
             $files   = glob(self::$base_path . DIR_SEPARATOR . 'routes' . DIR_SEPARATOR . '*.php');
-            $configs = [];
             foreach ($files as $file) {
                 require $file;
             }

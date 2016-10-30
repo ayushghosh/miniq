@@ -1,20 +1,11 @@
 <?php
 
-    /**
-     * Created by PhpStorm.
-     * User: ayush
-     * Date: 30/10/16
-     * Time: 11:13 AM
-     */
+   
     class QueueController extends ApiController
     {
 
 
-        /**
-         * QueueController constructor.
-         * @param $request
-         * @param $response
-         */
+
         public function __construct($request, $response)
         {
             parent::__construct($request, $response);

@@ -2,7 +2,6 @@
 
     if(db()->getSchemaBuilder()->hasTable('queues'))
     {
-//        echo "Table queues exist".PHP_EOL;
         return;
     }
     db()->getSchemaBuilder()->create('queues', function ($table) {
