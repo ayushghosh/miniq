@@ -1,7 +1,7 @@
 <?php
 
 
-    class Queue
+    class MiniQ
     {
 
         private $id;

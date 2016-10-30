@@ -4,7 +4,7 @@
     require_once '../bootstrap/app.php';
 
 
-    $q = new Queue();
+    $q = new MiniQ();
 
     while (true) {
         $q->daemonJobs();

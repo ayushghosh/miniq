@@ -375,7 +375,6 @@ class ComposerStaticInitfdc623cedc8295f265dcbea0f41352ce
         'Klein\\Tests\\ValidationsTest' => __DIR__ . '/..' . '/klein/klein/tests/Klein/Tests/ValidationsTest.php',
         'Klein\\Validator' => __DIR__ . '/..' . '/klein/klein/src/Klein/Validator.php',
         'MiniQ' => __DIR__ . '/../..' . '/MiniQ/MiniQ.php',
-        'Queue' => __DIR__ . '/../..' . '/MiniQ/Queue.php',
         'QueueConnectors' => __DIR__ . '/../..' . '/MiniQ/Connectors/QueueConnectors.php',
         'QueueController' => __DIR__ . '/../..' . '/app/controllers/QueueController.php',
         'QueueException' => __DIR__ . '/../..' . '/MiniQ/Exceptions/QueueException.php',

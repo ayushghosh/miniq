@@ -310,24 +310,6 @@
             return $job;
         }
 
-        /**
-         * @param $jobs
-         */
-        protected function failJob($jobs)
-        {
-            $sql = 'INSERT into failed_jobs ' . $jobs;
-            $this->connection->statement($sql);
-        }
-
-        /**
-         *
-         */
-        protected function removeFailedJob()
-        {
-            $jobs = $this->connection->table($this->jobs_table)
-                ->whereRaw($this->jobs_table . '.retries >= ' . $this->jobs_table . '.max_retries')->delete();
-        }
-
 
         /**
          * @param $queue_name
@@ -432,6 +414,7 @@
             $this->connection->beginTransaction();
             try {
                 $jobs = $this->connection->table($this->jobs_table)
+                    ->whereRaw('reserved = 0')
                     ->whereRaw($this->jobs_table . '.retries >= ' . $this->jobs_table . '.max_retries')
                     ->select($this->connection->raw('null'), $this->connection->raw('"database" as connection'), 'jobs.queue_id as queue_id', 'jobs.id as job_id', 'jobs.payload as payload', $this->connection->raw('"max_tries" as exception'), $this->connection->raw('NOW() as failed_at'))->toSql();
             } catch (Exception $e) {
@@ -441,6 +424,35 @@
             $this->removeFailedJob();
 
             $this->connection->commit();
+
+        }
+
+        /**
+         * @param $jobs
+         */
+        protected function failJob($jobs)
+        {
+            try {
+                $sql = 'INSERT into failed_jobs ' . $jobs;
+                $this->connection->statement($sql);
+            } catch (Exception $e) {
+
+            }
+
+        }
+
+        /**
+         *
+         */
+        protected function removeFailedJob()
+        {
+            try {
+                $jobs = $this->connection->table($this->jobs_table)
+                    ->where('reserved', 0)
+                    ->whereRaw($this->jobs_table . '.retries >= ' . $this->jobs_table . '.max_retries')->delete();
+            } catch (Exception $e) {
+
+            }
 
         }
 

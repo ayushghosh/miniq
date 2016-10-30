@@ -25,7 +25,7 @@
         public function index()
 
         {
-            $q = new Queue();
+            $q = new MiniQ();
 
             return self::respondObject($q->index(), 'queues.index');
         }
@@ -35,7 +35,7 @@
          */
         public function create()
         {
-            $q = new Queue();
+            $q = new MiniQ();
             $x = $q->create(self::$inputJson['name'],
                 self::inputOrDefault('visibility_timeout', 'queue'),
                 self::inputOrDefault('message_expiration', 'queue'),
@@ -55,7 +55,7 @@
          */
         public function push($queue_name)
         {
-            $q        = new Queue();
+            $q        = new MiniQ();
             $response = $q->push($queue_name,
                 self::$inputJson['payload'],
                 self::inputOrDefault('delay_seconds', 'queue'),
@@ -73,7 +73,7 @@
          */
         public function receive($queue_name)
         {
-            $q        = new Queue();
+            $q        = new MiniQ();
             $response = $q->receive($queue_name);
 
             if ($response) {
@@ -97,7 +97,7 @@
          */
         public function deleteJob($queue_name, $job_id)
         {
-            $q        = new Queue();
+            $q        = new MiniQ();
             $response = $q->deleteJob($queue_name, $job_id);
 
             if ($response) {
@@ -114,7 +114,7 @@
          */
         public function updateVisibilityTimeout($queue_name, $job_id)
         {
-            $q        = new Queue();
+            $q        = new MiniQ();
             $response = $q->updateVisibilityTimeout($queue_name, $job_id, self::inputOrDefault('visibility_timeout', 'queue'));
             if ($response['status'] == 'success') {
                 return self::respondSuccess($response['message']);

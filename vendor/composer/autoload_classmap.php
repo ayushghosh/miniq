@@ -300,7 +300,6 @@ return array(
     'Klein\\Tests\\ValidationsTest' => $vendorDir . '/klein/klein/tests/Klein/Tests/ValidationsTest.php',
     'Klein\\Validator' => $vendorDir . '/klein/klein/src/Klein/Validator.php',
     'MiniQ' => $baseDir . '/MiniQ/MiniQ.php',
-    'Queue' => $baseDir . '/MiniQ/Queue.php',
     'QueueConnectors' => $baseDir . '/MiniQ/Connectors/QueueConnectors.php',
     'QueueController' => $baseDir . '/app/controllers/QueueController.php',
     'QueueException' => $baseDir . '/MiniQ/Exceptions/QueueException.php',
