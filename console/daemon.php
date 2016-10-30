@@ -7,7 +7,7 @@
     $q = new Queue();
 
     while (true) {
-        $q->releaseExpiredJobs();
+        $q->daemonJobs();
         sleep(1);
     }
 

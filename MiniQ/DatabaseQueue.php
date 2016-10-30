@@ -149,45 +149,50 @@
         }
 
 
-        public function daemon($queue_name)
+        public function daemonJobs()
         {
-            $this->connection->beginTransaction();
-            $queue = $this->getQueue($queue_name);
 
             $this->releaseExpiredJobs();
-            $this->connection->commit();
+//            $this->failMaxRetriedJobs();
 
 
         }
 
         public function releaseExpiredJobs()
         {
+            $this->connection->beginTransaction();
             try {
                 $this->connection->table($this->jobs_table)->lockForUpdate()->where('expires_at', '<', $this->getTime())->update([
                     'reserved_at' => null,
                     'expires_at' => null,
                     'reserved' => 0
                 ]);
+                $this->connection->commit();
             } catch (Exception $e) {
 
             }
         }
 
-        public function failMaxRetriedJobs($queue)
+        public function failMaxRetriedJobs()
         {
+//            $this->connection->beginTransaction();
             try {
-                $this->connection->table($this->jobs_table)->lockForUpdate()->where('attempts', '>=', $queue->retries)->update([
-                    'reserved_at' => null,
-                    'expires_at' => null,
-                    'reserved' => 0
-                ]);
+                $jobs = $this->connection->table($this->jobs_table)
+                    ->leftJoin('queues', $this->jobs_table . '.queue_id', '=', $this->queue_table . '.id')
+                    ->whereRaw($this->jobs_table . '.attempts >= ' . $this->queue_table . '.retries')
+                    ->select($this->connection->raw('null'),$this->connection->raw('"database" as connection'), 'jobs.queue_id as queue_id', 'jobs.id as job_id', 'jobs.payload as payload', $this->connection->raw('"max_tries" as exception'),$this->connection->raw('NOW() as failed_at'))->toSql();
             } catch (Exception $e) {
-
+                dd($e->getMessage());
             }
+            $this->failJob($jobs);
+
+//            $this->connection->commit();
+
         }
 
         public function receive($queue_name)
         {
+            dd($this->failMaxRetriedJobs());
             $queue = $this->getQueue($queue_name);
 
             $this->connection->beginTransaction();
@@ -257,8 +262,12 @@
             return $job;
         }
 
-        protected function failJob($queue, $job)
+        protected function failJob($jobs)
         {
+//            dd($jobs);
+            $sql = 'INSERT into failed_jobs '.$jobs;
+            
+            $this->connection->statement($sql);
 
         }
 

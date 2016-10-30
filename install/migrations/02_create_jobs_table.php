@@ -7,7 +7,7 @@
     }
     db()->getSchemaBuilder()->create('jobs', function ($table) {
 
-        $table->bigIncrements('id');
+        $table->bigInteger('id',true);
 //        $table->string('queue');
         $table->integer('queue_id');
         $table->foreign('queue_id')->references('id')->on('queues');

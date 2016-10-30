@@ -184,9 +184,9 @@
         }
 
 
-        public function releaseExpiredJobs()
+        public function daemonJobs()
         {
-            $this->connection()->releaseExpiredJobs();
+            $this->connection()->daemonJobs();
         }
 
 
