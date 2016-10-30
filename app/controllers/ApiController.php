@@ -86,7 +86,7 @@
                     'message' => $message,
                     'code' => $code
                 ]
-            ], 400);
+            ], $code);
         }
 
 

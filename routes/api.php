@@ -9,9 +9,6 @@
 
         $qc = new QueueController($request, $response);
         ApiController::respondSuccess(["message" => "Installed"]);
-
-//        echo '<a href="/install?refresh=true">Refresh DB</a>';
-
     });
 
 
@@ -23,16 +20,14 @@
         });
 
         router()->post('/[:queue_name]/jobs', function ($request, $response) {
-            // Show a single user
             $qc = new QueueController($request, $response);
-            $qc->push($request->queue_name);
+            $qc->push(clean_input($request->queue_name));
 
         });
 
         router()->get('/[:queue_name]/jobs', function ($request, $response) {
-            // Show a single user
             $qc = new QueueController($request, $response);
-            $qc->receive($request->queue_name);
+            $qc->receive(clean_input($request->queue_name));
 
         });
 

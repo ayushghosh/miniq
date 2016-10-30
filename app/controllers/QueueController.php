@@ -48,13 +48,32 @@
 
         public function push($queue_name)
         {
-            $q = new Queue();
+            $q        = new Queue();
             $response = $q->push($queue_name, self::$inputJson['payload'], self::inputOrDefault('delay_seconds', 'queue'));
 
             return self::respondObject([
                 'message' => 'Job queued',
                 'job_id' => $response
-            ],'queue.job.pushed');
+            ], 'queue.job.pushed');
+        }
+
+
+        public function receive($queue_name)
+        {
+            $q        = new Queue();
+            $response = $q->receive($queue_name);
+
+            if ($response) {
+                $data = [
+                    'job_id' => $response->id,
+                    'payload' => $response->payload,
+                    'attempts' => $response->attempts
+                ];
+                return self::respondObject(
+                    $data, 'queue.job.receive');
+            }
+
+            return self::respondError("Empty Queue", 200);
         }
 
 

@@ -180,7 +180,7 @@
 
         public function receive($queue_name)
         {
-
+            return $this->connection()->receive($queue_name);
         }
 
 

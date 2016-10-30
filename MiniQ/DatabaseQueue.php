@@ -129,10 +129,10 @@
 
         protected function getDelaySeconds($queue, $delay_seconds)
         {
-            if(!$delay_seconds || $delay_seconds == 0)
-            {
+            if (!$delay_seconds || $delay_seconds == 0) {
                 return $queue->delay_seconds;
             }
+
             return $delay_seconds;
         }
 
@@ -148,19 +148,118 @@
             return ($availableAt + $queue->visibility_timeout);
         }
 
+
+        public function daemon($queue_name)
+        {
+            $this->connection->beginTransaction();
+            $queue = $this->getQueue($queue_name);
+
+            $this->releaseExpiredJobs();
+            $this->connection->commit();
+
+
+        }
+
         public function releaseExpiredJobs()
         {
-            try{
-                $this->connection->table($this->jobs_table)->where('expires_at','<',$this->getTime())->update([
-                    'reserved_at' =>null,
+            try {
+                $this->connection->table($this->jobs_table)->lockForUpdate()->where('expires_at', '<', $this->getTime())->update([
+                    'reserved_at' => null,
                     'expires_at' => null,
                     'reserved' => 0
                 ]);
-            }
-            catch(Exception $e)
-            {
+            } catch (Exception $e) {
 
             }
+        }
+
+        public function failMaxRetriedJobs($queue)
+        {
+            try {
+                $this->connection->table($this->jobs_table)->lockForUpdate()->where('attempts', '>=', $queue->retries)->update([
+                    'reserved_at' => null,
+                    'expires_at' => null,
+                    'reserved' => 0
+                ]);
+            } catch (Exception $e) {
+
+            }
+        }
+
+        public function receive($queue_name)
+        {
+            $queue = $this->getQueue($queue_name);
+
+            $this->connection->beginTransaction();
+
+            if ($job = $this->popJob($queue)) {
+                $job = $this->markReserved($queue, $job);
+
+                $this->connection->commit();
+
+                return $job;
+//                return $this->connection->table($this->jobs_table)->whereIn('id', $jobs)->get();
+            }
+
+            $this->connection->commit();
+
+
+        }
+
+        protected function popJob($queue)
+        {
+            $job = $this->connection->table($this->jobs_table)
+                ->lockForUpdate()
+                ->where('queue_id', $queue->id)
+                ->where(function ($query) use ($queue) {
+                    $this->isAvailable($queue, $query);
+//                    $this->isReservedButExpired($query);
+                })
+                ->orderBy('id', 'asc')
+                ->first();
+
+            return $job ? (object)$job : null;
+        }
+
+        protected function isAvailable($queue, $query)
+        {
+            $query->where(function ($query) use ($queue) {
+                $query->where('reserved', 0);
+                $query->whereNull('reserved_at');
+                $query->where('available_at', '<=', $this->getTime());
+                $query->where('attempts', '<', $queue->retries);
+            });
+        }
+
+//        protected function isReservedButExpired($query)
+//        {
+//            $expiration = \Carbon\Carbon::now()->subSeconds(90)->getTimestamp();
+//            dd($expiration);
+//
+//            $query->orWhere(function ($query) use ($expiration) {
+//                $query->where('reserved_at', '<=', $expiration);
+//            });
+//        }
+
+        protected function markReserved($queue, $job)
+        {
+            $job->attempts    = $job->attempts + 1;
+            $job->reserved_at = $this->getTime();
+            $job->expires_at  = $this->getExpiresAt($queue, $job->reserved_at);
+
+            $this->connection->table($this->jobs_table)->where('id', $job->id)->update([
+                'reserved' => 1,
+                'reserved_at' => $job->reserved_at,
+                'attempts' => $job->attempts,
+                'expires_at' => $job->expires_at,
+            ]);
+
+            return $job;
+        }
+
+        protected function failJob($queue, $job)
+        {
+
         }
 
 
