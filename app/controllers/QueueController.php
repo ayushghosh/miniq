@@ -100,10 +100,10 @@
             $q        = new MiniQ();
             $response = $q->deleteJob($queue_name, $job_id);
 
-            if ($response) {
-                return self::respondSuccess("Job deleted");
+            if ($response['status'] == 'success') {
+                return self::respondSuccess($response['message']);
             } else {
-                return self::respondError("Job couldn't be deleted");
+                return self::respondError($response['message']);
             }
         }
 
