@@ -2,7 +2,7 @@
 
     if(db()->getSchemaBuilder()->hasTable('jobs'))
     {
-        echo "Table jobs exist".PHP_EOL;
+//        echo "Table jobs exist".PHP_EOL;
         return;
     }
     db()->getSchemaBuilder()->create('jobs', function ($table) {
@@ -15,7 +15,7 @@
         $table->tinyInteger('attempts')->unsigned();
         $table->boolean('reserved')->default(0);
         $table->unsignedInteger('reserved_at')->nullable();
-        $table->unsignedInteger('visibility_timeout')->nullable();
+        $table->unsignedInteger('expires_at')->nullable();
         $table->unsignedInteger('available_at');
         $table->unsignedInteger('created_at');
         $table->index(['queue_id', 'reserved_at']);

@@ -178,5 +178,16 @@
             return $this->connection()->push($queue_name, $payload, $delay_seconds);
         }
 
+        public function receive($queue_name)
+        {
+
+        }
+
+
+        public function releaseExpiredJobs()
+        {
+            $this->connection()->releaseExpiredJobs();
+        }
+
 
     }

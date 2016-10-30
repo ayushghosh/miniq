@@ -3,7 +3,7 @@
 
     if(db()->getSchemaBuilder()->hasTable('failed_jobs'))
     {
-        echo "Table failed_jobs exist".PHP_EOL;
+//        echo "Table failed_jobs exist".PHP_EOL;
         return;
     }
     db()->getSchemaBuilder()->create('failed_jobs', function ($table) {

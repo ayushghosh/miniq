@@ -73,6 +73,7 @@
                 $this->getAvailableAt($this->getDelaySeconds($queue, $delay_seconds)),
                 $attempts = 0);
 
+
             return $this->connection->table($this->jobs_table)->insertGetId($record);
         }
 
@@ -99,7 +100,7 @@
                 'payload' => $this->getValidPayload($queue, $payload),
                 'reserved_at' => null,
                 'reserved' => false,
-                'visibility_timeout' => $queue->visibility_timeout,
+                'expires_at' => null,
                 'available_at' => $available_at,
                 'created_at' => $this->getTime(),
                 'attempts' => $attempts
@@ -140,6 +141,26 @@
             $availableAt = $delay instanceof DateTime ? $delay : \Carbon\Carbon::now()->addSeconds($delay);
 
             return $availableAt->getTimestamp();
+        }
+
+        protected function getExpiresAt($queue, $availableAt)
+        {
+            return ($availableAt + $queue->visibility_timeout);
+        }
+
+        public function releaseExpiredJobs()
+        {
+            try{
+                $this->connection->table($this->jobs_table)->where('expires_at','<',$this->getTime())->update([
+                    'reserved_at' =>null,
+                    'expires_at' => null,
+                    'reserved' => 0
+                ]);
+            }
+            catch(Exception $e)
+            {
+
+            }
         }
 
 

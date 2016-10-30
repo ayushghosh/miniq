@@ -41,26 +41,7 @@
     }
 
 
-    function respond($data, $code = 200, $is_json = true)
-    {
-        if ($is_json) {
-            header('Content-Type: application/json', true, $code);
-        }
-        echo json_encode($data);
-        die();
-    }
-
-    function respondError($data, $code = 400)
-    {
-        router()->response()->status(400);
-
-        return respond([
-            'object' => 'error',
-            'status' => 'error',
-            'message' => $data['message'],
-            'code' => $code
-        ]);
-    }
+  
 
 
 
