@@ -1,17 +1,21 @@
 <?php
 
 
+    /**
+     * Class QueueConnectors
+     */
     class QueueConnectors
     {
 
+        /**
+         * @var array
+         */
         private static $drivers = [];
 
+
         /**
-         * QueueConnectors constructor.
-         * @param $connector
+         * @return array
          */
-
-
         public static function connectors()
         {
             foreach (config('queue.drivers') as $driver) {
@@ -24,6 +28,10 @@
         }
 
 
+        /**
+         * @param $driver
+         * @throws Exception
+         */
         protected static function addDatabaseConnector($driver)
         {
             $db_connector = new DatabaseConnector();

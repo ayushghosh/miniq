@@ -2,6 +2,9 @@
 
     use Illuminate\Database\Capsule\Manager as DB;
 
+    /**
+     *
+     */
     define('DIR_SEPARATOR', '/');
     require_once '../vendor/autoload.php';
     require_once 'helpers.php';

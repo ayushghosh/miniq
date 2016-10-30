@@ -1,16 +1,24 @@
 <?php
 
+
     /**
-     * Created by PhpStorm.
-     * User: ayush
-     * Date: 30/10/16
-     * Time: 11:22 AM
+     * Class ApiController
      */
     class ApiController
     {
+        /**
+         * @var
+         */
         protected static $request;
+        /**
+         * @var
+         */
         protected static $response;
-        public static    $inputJson;
+        /**
+         * @var
+         */
+        public static $inputJson;
+
 
         /**
          * ApiController constructor.
@@ -29,6 +37,9 @@
             App::bind('response', $response);
         }
 
+        /**
+         *
+         */
         public static function inputJson()
         {
             try {
@@ -54,12 +65,19 @@
         }
 
 
+        /**
+         * @param     $data
+         * @param int $code
+         */
         public static function respond($data, $code = 200)
         {
             self::$response->code($code);
             self::$response->json($data);
         }
 
+        /**
+         * @param $message
+         */
         public static function respondSuccess($message)
         {
             return self::respond([
@@ -71,6 +89,10 @@
             ], 200);
         }
 
+        /**
+         * @param     $message
+         * @param int $code
+         */
         public static function respondError($message, $code = 400)
         {
 
@@ -85,6 +107,10 @@
         }
 
 
+        /**
+         * @param $data
+         * @param $name
+         */
         public function respondObject($data, $name)
         {
             return self::respond([
@@ -95,6 +121,11 @@
         }
 
 
+        /**
+         * @param $field
+         * @param $key
+         * @return mixed
+         */
         public static function inputOrDefault($field, $key)
         {
             return (isset(self::$inputJson[$field]) ? self::$inputJson[$field] : config('constants.' . $key)[$field]);

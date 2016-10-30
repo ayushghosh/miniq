@@ -1,17 +1,27 @@
 <?php
 
-   
+
+    /**
+     * Class QueueController
+     */
     class QueueController extends ApiController
     {
 
 
-
+        /**
+         * QueueController constructor.
+         * @param $request
+         * @param $response
+         */
         public function __construct($request, $response)
         {
             parent::__construct($request, $response);
 
         }
 
+        /**
+         *
+         */
         public function index()
 
         {
@@ -20,6 +30,9 @@
             return self::respondObject($q->index(), 'queues.index');
         }
 
+        /**
+         *
+         */
         public function create()
         {
             $q = new Queue();
@@ -37,6 +50,9 @@
         }
 
 
+        /**
+         * @param $queue_name
+         */
         public function push($queue_name)
         {
             $q        = new Queue();
@@ -52,6 +68,9 @@
         }
 
 
+        /**
+         * @param $queue_name
+         */
         public function receive($queue_name)
         {
             $q        = new Queue();
@@ -72,6 +91,10 @@
         }
 
 
+        /**
+         * @param $queue_name
+         * @param $job_id
+         */
         public function deleteJob($queue_name, $job_id)
         {
             $q        = new Queue();
@@ -85,6 +108,10 @@
         }
 
 
+        /**
+         * @param $queue_name
+         * @param $job_id
+         */
         public function updateVisibilityTimeout($queue_name, $job_id)
         {
             $q        = new Queue();

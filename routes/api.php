@@ -25,7 +25,7 @@
 
         });
 
-        router()->get('/[:queue_name]/jobs', function ($request, $response) {
+        router()->get('/[:queue_name]/jobs/receive', function ($request, $response) {
             $qc = new QueueController($request, $response);
             $qc->receive(clean_input($request->queue_name));
 
