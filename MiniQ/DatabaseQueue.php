@@ -206,8 +206,6 @@
 
         public function receive($queue_name)
         {
-            dd($this->releaseExpiredJobs());
-//            dd($this->failMaxRetriedJobs());
             $queue = $this->getQueue($queue_name);
 
             $this->connection->beginTransaction();
@@ -302,6 +300,36 @@
                 }
 
                 return $job;
+
+            } catch (Exception $e) {
+                return $e->getMessage();
+            }
+
+
+        }
+
+
+        public function updateVisibilityTimeout($queue_name, $job_id, $timeout)
+        {
+            $queue = $this->getQueue($queue_name);
+
+            try {
+                $job = $this->connection->table($this->jobs_table)->where('queue_id', $queue->id)->where('id', $job_id)->first();
+
+                if ($job) {
+                    if ($job->reserved == 1) {
+                        $job = $this->connection->table($this->jobs_table)->where('queue_id', $queue->id)->where('id', $job_id)->update([
+                            'expires_at' => $this->connection->raw($this->getTime() + $timeout)
+                        ]);
+
+                        return ['message' => 'Timeout updated', 'status' => 'success'];
+
+                    } else {
+                        return ['message' => 'Job not in flight', 'status' => 'error'];
+                    }
+                }
+
+                return ['message' => 'Job not found', 'status' => 'error'];
 
             } catch (Exception $e) {
                 return $e->getMessage();

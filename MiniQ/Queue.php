@@ -196,4 +196,10 @@
         }
 
 
+        public function updateVisibilityTimeout($queue_name, $job_id, $timeout)
+        {
+            return $this->connection()->updateVisibilityTimeout($queue_name, $job_id, $timeout);
+        }
+
+
     }

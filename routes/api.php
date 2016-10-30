@@ -37,6 +37,12 @@
 
         });
 
+        router()->post('/[:queue_name]/jobs/[:job_id]/timeout', function ($request, $response) {
+            $qc = new QueueController($request, $response);
+            $qc->updateVisibilityTimeout(clean_input($request->queue_name), clean_input($request->job_id));
+
+        });
+
         router()->post('/?', function ($request, $response) {
 
             $qc = new QueueController($request, $response);

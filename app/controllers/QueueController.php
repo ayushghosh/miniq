@@ -94,4 +94,16 @@
         }
 
 
+        public function updateVisibilityTimeout($queue_name, $job_id)
+        {
+            $q        = new Queue();
+            $response = $q->updateVisibilityTimeout($queue_name, $job_id, self::inputOrDefault('visibility_timeout', 'queue'));
+            if ($response['status'] == 'success') {
+                return self::respondSuccess($response['message']);
+            } else {
+                return self::respondError($response['message']);
+            }
+        }
+
+
     }
