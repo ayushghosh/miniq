@@ -81,4 +81,17 @@
         }
 
 
+        public function deleteJob($queue_name, $job_id)
+        {
+            $q        = new Queue();
+            $response = $q->deleteJob($queue_name, $job_id);
+
+            if ($response) {
+                return self::respondSuccess("Job deleted");
+            } else {
+                return self::respondError("Job couldn't be deleted");
+            }
+        }
+
+
     }

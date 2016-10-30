@@ -175,7 +175,7 @@
 
         public function push($queue_name, $payload, $delay_seconds, $retries)
         {
-            return $this->connection()->push($queue_name, $payload, $delay_seconds,$retries);
+            return $this->connection()->push($queue_name, $payload, $delay_seconds, $retries);
         }
 
         public function receive($queue_name)
@@ -187,6 +187,12 @@
         public function daemonJobs()
         {
             $this->connection()->daemonJobs();
+        }
+
+
+        public function deleteJob($queue_name, $job_id)
+        {
+            return $this->connection()->deleteJob($queue_name, $job_id);
         }
 
 

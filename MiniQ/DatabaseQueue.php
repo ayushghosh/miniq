@@ -290,4 +290,25 @@
         }
 
 
+        public function deleteJob($queue_name, $job_id)
+        {
+            $queue = $this->getQueue($queue_name);
+
+            try {
+                $job = $this->connection->table($this->jobs_table)->where('queue_id', $queue->id)->where('id', $job_id)->delete();
+                if ($job) {
+                    $job->delete();
+
+                }
+
+                return $job;
+
+            } catch (Exception $e) {
+                return $e->getMessage();
+            }
+
+
+        }
+
+
     }
