@@ -64,14 +64,14 @@
         }
 
 
-        public function push($queue_name, $payload, $delay_seconds)
+        public function push($queue_name, $payload, $delay_seconds, $retries)
         {
             $queue = $this->getQueue($queue_name);
 
             $record = $this->buildJobRecord($queue,
                 $this->getValidPayload($queue, $payload),
                 $this->getAvailableAt($this->getDelaySeconds($queue, $delay_seconds)),
-                $attempts = 0);
+                $retries);
 
 
             return $this->connection->table($this->jobs_table)->insertGetId($record);
@@ -93,7 +93,7 @@
 
         }
 
-        public function buildJobRecord($queue, $payload, $available_at, $attempts)
+        public function buildJobRecord($queue, $payload, $available_at, $retries)
         {
             return [
                 'queue_id' => $queue->id,
@@ -103,7 +103,8 @@
                 'expires_at' => null,
                 'available_at' => $available_at,
                 'created_at' => $this->getTime(),
-                'attempts' => $attempts
+                'retries' => 0,
+                'max_retries' => $this->getMaxRetries($queue, $retries)
             ];
 
         }
@@ -136,6 +137,16 @@
             return $delay_seconds;
         }
 
+        protected function getMaxRetries($queue, $retries)
+        {
+            if (!$retries || $retries == 0) {
+                return $queue->retries;
+            }
+
+            return $retries;
+        }
+
+
         protected function getAvailableAt($delay)
         {
             $availableAt = $delay instanceof DateTime ? $delay : \Carbon\Carbon::now()->addSeconds($delay);
@@ -153,7 +164,7 @@
         {
 
             $this->releaseExpiredJobs();
-//            $this->failMaxRetriedJobs();
+            $this->failMaxRetriedJobs();
 
 
         }
@@ -162,11 +173,14 @@
         {
             $this->connection->beginTransaction();
             try {
-                $this->connection->table($this->jobs_table)->lockForUpdate()->where('expires_at', '<', $this->getTime())->update([
-                    'reserved_at' => null,
-                    'expires_at' => null,
-                    'reserved' => 0
-                ]);
+                $this->connection->table($this->jobs_table)->lockForUpdate()
+                    ->join('queues', 'jobs.queue_id', 'queues.id')
+                    ->where('expires_at', '<', $this->getTime())->update([
+                        'reserved_at' => null,
+                        'expires_at' => null,
+                        'reserved' => 0,
+                        'available_at' => $this->connection->raw('available_at + queues.retries_delay'),
+                    ]);
                 $this->connection->commit();
             } catch (Exception $e) {
 
@@ -175,24 +189,25 @@
 
         public function failMaxRetriedJobs()
         {
-//            $this->connection->beginTransaction();
+            $this->connection->beginTransaction();
             try {
                 $jobs = $this->connection->table($this->jobs_table)
-                    ->leftJoin('queues', $this->jobs_table . '.queue_id', '=', $this->queue_table . '.id')
-                    ->whereRaw($this->jobs_table . '.attempts >= ' . $this->queue_table . '.retries')
-                    ->select($this->connection->raw('null'),$this->connection->raw('"database" as connection'), 'jobs.queue_id as queue_id', 'jobs.id as job_id', 'jobs.payload as payload', $this->connection->raw('"max_tries" as exception'),$this->connection->raw('NOW() as failed_at'))->toSql();
+                    ->whereRaw($this->jobs_table . '.retries >= ' . $this->jobs_table . '.max_retries')
+                    ->select($this->connection->raw('null'), $this->connection->raw('"database" as connection'), 'jobs.queue_id as queue_id', 'jobs.id as job_id', 'jobs.payload as payload', $this->connection->raw('"max_tries" as exception'), $this->connection->raw('NOW() as failed_at'))->toSql();
             } catch (Exception $e) {
                 dd($e->getMessage());
             }
             $this->failJob($jobs);
+            $this->removeFailedJob();
 
-//            $this->connection->commit();
+            $this->connection->commit();
 
         }
 
         public function receive($queue_name)
         {
-            dd($this->failMaxRetriedJobs());
+            dd($this->releaseExpiredJobs());
+//            dd($this->failMaxRetriedJobs());
             $queue = $this->getQueue($queue_name);
 
             $this->connection->beginTransaction();
@@ -232,7 +247,7 @@
                 $query->where('reserved', 0);
                 $query->whereNull('reserved_at');
                 $query->where('available_at', '<=', $this->getTime());
-                $query->where('attempts', '<', $queue->retries);
+                $query->whereRaw('retries <= max_retries');
             });
         }
 
@@ -248,14 +263,14 @@
 
         protected function markReserved($queue, $job)
         {
-            $job->attempts    = $job->attempts + 1;
+            $job->retries     = $job->retries + 1;
             $job->reserved_at = $this->getTime();
             $job->expires_at  = $this->getExpiresAt($queue, $job->reserved_at);
 
             $this->connection->table($this->jobs_table)->where('id', $job->id)->update([
                 'reserved' => 1,
                 'reserved_at' => $job->reserved_at,
-                'attempts' => $job->attempts,
+                'retries' => $job->retries,
                 'expires_at' => $job->expires_at,
             ]);
 
@@ -264,11 +279,14 @@
 
         protected function failJob($jobs)
         {
-//            dd($jobs);
-            $sql = 'INSERT into failed_jobs '.$jobs;
-            
+            $sql = 'INSERT into failed_jobs ' . $jobs;
             $this->connection->statement($sql);
+        }
 
+        protected function removeFailedJob()
+        {
+            $jobs = $this->connection->table($this->jobs_table)
+                ->whereRaw($this->jobs_table . '.retries >= ' . $this->jobs_table . '.max_retries')->delete();
         }
 
 

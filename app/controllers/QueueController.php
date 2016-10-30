@@ -49,7 +49,10 @@
         public function push($queue_name)
         {
             $q        = new Queue();
-            $response = $q->push($queue_name, self::$inputJson['payload'], self::inputOrDefault('delay_seconds', 'queue'));
+            $response = $q->push($queue_name,
+                self::$inputJson['payload'],
+                self::inputOrDefault('delay_seconds', 'queue'),
+                self::inputOrDefault('retries', 'queue'));
 
             return self::respondObject([
                 'message' => 'Job queued',
@@ -67,8 +70,9 @@
                 $data = [
                     'job_id' => $response->id,
                     'payload' => $response->payload,
-                    'attempts' => $response->attempts
+                    'retries' => $response->retries
                 ];
+
                 return self::respondObject(
                     $data, 'queue.job.receive');
             }

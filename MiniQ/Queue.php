@@ -173,9 +173,9 @@
         }
 
 
-        public function push($queue_name, $payload, $delay_seconds)
+        public function push($queue_name, $payload, $delay_seconds, $retries)
         {
-            return $this->connection()->push($queue_name, $payload, $delay_seconds);
+            return $this->connection()->push($queue_name, $payload, $delay_seconds,$retries);
         }
 
         public function receive($queue_name)

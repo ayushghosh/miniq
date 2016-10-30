@@ -12,7 +12,8 @@
         $table->integer('queue_id');
         $table->foreign('queue_id')->references('id')->on('queues');
         $table->longText('payload');
-        $table->tinyInteger('attempts')->unsigned();
+        $table->tinyInteger('retries')->unsigned();
+        $table->tinyInteger('max_retries')->unsigned();
         $table->boolean('reserved')->default(0);
         $table->unsignedInteger('reserved_at')->nullable();
         $table->unsignedInteger('expires_at')->nullable();
