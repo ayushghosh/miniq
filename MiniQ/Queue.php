@@ -36,8 +36,7 @@
          */
         public function setName($name)
         {
-            if(!$name || $name == '')
-            {
+            if (!$name || $name == '') {
                 throw new QueueException("Name is required");
             }
             $this->name = $name;
@@ -123,6 +122,11 @@
             $this->retries_delay = $retries_delay;
         }
 
+        private function connection()
+        {
+            return $this->connectors[config('queue.default')];
+        }
+
         /**
          * Queue constructor.
          * @param $name
@@ -145,13 +149,13 @@
             $this->setRetries(clean_input($retries));
             $this->setRetriesDelay(clean_input($retries_delay));
 
-            $this->createQueue();
+            return $this->createQueue();
         }
 
         private function createQueue()
         {
 
-            $this->connection()->create(
+            return $this->connection()->create(
                 $this->name,
                 $this->visibility_timeout,
                 $this->message_expiration,
@@ -163,10 +167,15 @@
             );
         }
 
-
-        private function connection()
+        public function index()
         {
-            return $this->connectors[config('queue.default')];
+            return $this->connection()->index();
+        }
+
+
+        public function push($queue_name, $payload, $delay_seconds)
+        {
+            return $this->connection()->push($queue_name, $payload, $delay_seconds);
         }
 
 

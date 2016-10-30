@@ -8,12 +8,15 @@
     db()->getSchemaBuilder()->create('jobs', function ($table) {
 
         $table->bigIncrements('id');
-        $table->string('queue');
+//        $table->string('queue');
+        $table->integer('queue_id');
+        $table->foreign('queue_id')->references('id')->on('queues');
         $table->longText('payload');
         $table->tinyInteger('attempts')->unsigned();
         $table->boolean('reserved')->default(0);
         $table->unsignedInteger('reserved_at')->nullable();
+        $table->unsignedInteger('visibility_timeout')->nullable();
         $table->unsignedInteger('available_at');
         $table->unsignedInteger('created_at');
-        $table->index(['queue', 'reserved_at']);
+        $table->index(['queue_id', 'reserved_at']);
     });

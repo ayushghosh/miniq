@@ -10,7 +10,8 @@
     {
         public function errorMessage()
         {
-            return respondError(['message'=> $this->getMessage()], $this->getCode());
+            return ApiController::respondError($this->getMessage(),$this->getCode());
+//                respondError(['message'=> $this->getMessage()], $this->getCode());
         }
 
         public function __toString()

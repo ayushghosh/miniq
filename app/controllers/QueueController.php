@@ -21,19 +21,40 @@
 
         }
 
+        public function index()
 
-        public function save()
         {
             $q = new Queue();
-            $q->create($this->inputJson['name'],
-                $this->inputOrDefault('visibility_timeout', 'queue'),
-                $this->inputOrDefault('message_expiration', 'queue'),
-                $this->inputOrDefault('maximum_message_size', 'queue'),
-                $this->inputOrDefault('delay_seconds', 'queue'),
-                $this->inputOrDefault('receive_message_wait_time_seconds', 'queue'),
-                $this->inputOrDefault('retries', 'queue'),
-                $this->inputOrDefault('retries_delay', 'queue')
+
+            return self::respondObject($q->index(), 'queues.index');
+        }
+
+        public function create()
+        {
+            $q = new Queue();
+            $x = $q->create(self::$inputJson['name'],
+                self::inputOrDefault('visibility_timeout', 'queue'),
+                self::inputOrDefault('message_expiration', 'queue'),
+                self::inputOrDefault('maximum_message_size', 'queue'),
+                self::inputOrDefault('delay_seconds', 'queue'),
+                self::inputOrDefault('receive_message_wait_time_seconds', 'queue'),
+                self::inputOrDefault('retries', 'queue'),
+                self::inputOrDefault('retries_delay', 'queue')
             );
+
+            return self::respondSuccess('Queue Added');
+        }
+
+
+        public function push($queue_name)
+        {
+            $q = new Queue();
+            $response = $q->push($queue_name, self::$inputJson['payload'], self::inputOrDefault('delay_seconds', 'queue'));
+
+            return self::respondObject([
+                'message' => 'Job queued',
+                'job_id' => $response
+            ],'queue.job.pushed');
         }
 
 

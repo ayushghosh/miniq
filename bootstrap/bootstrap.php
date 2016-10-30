@@ -24,24 +24,5 @@
 
     $router->dispatch();
 
-//    dd($router->request()->body());
-
-
-
-
-
-
-
-    //    require_once (App::$base_path.DIR_SEPARATOR.'routes'.DIR_SEPARATOR.'api.php');
-
-
-    ////    $db->setAsGlobal();
-    //    $db->getConnection(config('database.default'))->table('jobs')->get();
-
-
-    //    dd(DB::table('jobs')->get());
-    //    dd(\Illuminate\Support\Facades\DB::table('jobs')->get());
-
-
 
 

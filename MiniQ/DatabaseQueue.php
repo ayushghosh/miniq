@@ -7,6 +7,8 @@
         protected $queue_table;
         protected $jobs_table;
 
+        protected $queue;
+
         /**
          * DatabaseQueue constructor.
          * @param $connection
@@ -26,9 +28,10 @@
             try {
                 $exists = $this->connection->table($this->queue_table)->where('name', $name)->first();
                 if ($exists) {
-                    throw new QueueException('Queue name already exist',1);
+                    throw new QueueException('Queue name already exist', 1);
                 }
-                $this->connection->table($this->queue_table)->insert([
+
+                return $this->connection->table($this->queue_table)->insertGetId([
                     'name' => $name,
                     'visibility_timeout' => $visibility_timeout,
                     'message_expiration' => $message_expiration,
@@ -42,6 +45,101 @@
                 $e->errorMessage();
             }
 
+        }
+
+        public function index()
+        {
+            try {
+                $queues = ($this->connection->table($this->queue_table)->get());
+
+            } catch (QueueException $e) {
+                $e->errorMessage();
+            }
+
+            if ($queues) {
+                return ($queues);
+            }
+
+            return [];
+        }
+
+
+        public function push($queue_name, $payload, $delay_seconds)
+        {
+            $queue = $this->getQueue($queue_name);
+
+            $record = $this->buildJobRecord($queue,
+                $this->getValidPayload($queue, $payload),
+                $this->getAvailableAt($this->getDelaySeconds($queue, $delay_seconds)),
+                $attempts = 0);
+
+            return $this->connection->table($this->jobs_table)->insertGetId($record);
+        }
+
+        private function getQueue($identifier, $type = 'name')
+        {
+            try {
+                $queue = $this->connection->table($this->queue_table)->where($type, $identifier)->first();
+                if (!$queue) {
+                    throw new QueueException('Invalid queue identifier');
+                }
+            } catch (QueueException $e) {
+                return $e->errorMessage();
+            }
+
+            return $queue;
+
+
+        }
+
+        public function buildJobRecord($queue, $payload, $available_at, $attempts)
+        {
+            return [
+                'queue_id' => $queue->id,
+                'payload' => $this->getValidPayload($queue, $payload),
+                'reserved_at' => null,
+                'reserved' => false,
+                'visibility_timeout' => $queue->visibility_timeout,
+                'available_at' => $available_at,
+                'created_at' => $this->getTime(),
+                'attempts' => $attempts
+            ];
+
+        }
+
+        protected function getValidPayload($queue, $payload)
+        {
+            try {
+                if (strlen($payload) > $queue->maximum_message_size) {
+                    throw new QueueException('Payload size is greater then acceptable.');
+                }
+            } catch (QueueException $e) {
+                return $e->errorMessage();
+            }
+
+            return $payload;
+
+        }
+
+        protected function getTime()
+        {
+            return \Carbon\Carbon::now()->getTimestamp();
+        }
+
+        protected function getDelaySeconds($queue, $delay_seconds)
+        {
+            if(!$delay_seconds || $delay_seconds == 0)
+            {
+                return $queue->delay_seconds;
+            }
+            return $delay_seconds;
+        }
+
+        protected function getAvailableAt($delay)
+        {
+            $availableAt = $delay instanceof DateTime ? $delay : \Carbon\Carbon::now()->addSeconds($delay);
+
+            return $availableAt->getTimestamp();
         }
 
 

@@ -7,7 +7,7 @@
     }
     db()->getSchemaBuilder()->create('queues', function ($table) {
         
-        $table->increments('id');
+        $table->integer('id', true);
         $table->string('name')->unique();
         $table->integer('visibility_timeout')->default(60);
         $table->integer('message_expiration')->default(1209600);

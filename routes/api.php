@@ -18,18 +18,21 @@
     router()->with('/queues', function () {
 
         router()->get('/?', function ($request, $response) {
-            $q = new Queue();
-            $q->create("some", 1200);
+            $qc = new QueueController($request, $response);
+            $qc->index();
         });
 
-        router()->respond('GET', '/[:id]', function ($request, $response) {
+        router()->post('/[:queue_name]/jobs', function ($request, $response) {
             // Show a single user
+            $qc = new QueueController($request, $response);
+            $qc->push($request->queue_name);
+
         });
 
         router()->post('/?', function ($request, $response) {
 
             $qc = new QueueController($request, $response);
-            $qc->save();
+            $qc->create();
         });
 
     });

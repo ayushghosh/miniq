@@ -8,9 +8,9 @@
      */
     class ApiController
     {
-        protected $request;
-        protected $response;
-        public    $inputJson;
+        protected static $request;
+        protected static $response;
+        public static    $inputJson;
 
         /**
          * ApiController constructor.
@@ -19,17 +19,20 @@
          */
         public function __construct($request, $response)
         {
-            $this->request  = $request;
-            $this->response = $response;
-            $this->inputJson();
+            self::$request  = $request;
+            self::$response = $response;
+            if (in_array($request->method(), ['POST', 'PUT'])) {
+
+                self::inputJson();
+            }
             App::bind('request', $request);
             App::bind('response', $response);
         }
 
-        public function inputJson()
+        public static function inputJson()
         {
             try {
-                $array = json_decode($this->request->body(), true);
+                $array = json_decode(self::$request->body(), true);
 
                 if (json_last_error()) {
                     throw new QueueException('Error parsing input');
@@ -38,7 +41,7 @@
                 $e->errorMessage();
             }
 
-            $this->inputJson = $array;
+            self::$inputJson = $array;
         }
 
 
@@ -47,34 +50,58 @@
          */
         public function getInputJson()
         {
-            return $this->inputJson;
+            return self::$inputJson;
         }
 
 
-        public static function respond($data, $code = 200, $is_json = true)
+        public static function respond($data, $code = 200)
         {
-            if ($is_json) {
-                header('Content-Type: application/json', true, $code);
-            }
-            echo json_encode($data);
+            self::$response->code($code);
+            self::$response->json($data);
+//            if ($is_json) {
+//                header('Content-Type: application/json', true, $code);
+//            }
+//            echo json_encode($data);
             die();
         }
 
-        public static function respondError($data, $code = 400)
+        public static function respondSuccess($message)
         {
-            router()->response()->status(400);
+            return self::respond([
+                'object' => 'message',
+                'status' => 'success',
+                'data' => [
+                    'message' => $message
+                ]
+            ], 200);
+        }
 
-            return respond([
+        public static function respondError($message, $code = 400)
+        {
+
+            return self::respond([
                 'object' => 'error',
                 'status' => 'error',
-                'message' => $data['message'],
-                'code' => $code
-            ]);
+                'data' => [
+                    'message' => $message,
+                    'code' => $code
+                ]
+            ], 400);
         }
 
 
-        public function inputOrDefault($field, $key)
+        public function respondObject($data, $name)
         {
-            return ( isset($this->inputJson[$field]) ? $this->inputJson[$field]: config('constants.' . $key)[$field]);
+            return self::respond([
+                'object' => $name,
+                'status' => 'success',
+                'data' => $data
+            ], 200);
+        }
+
+
+        public static function inputOrDefault($field, $key)
+        {
+            return (isset(self::$inputJson[$field]) ? self::$inputJson[$field] : config('constants.' . $key)[$field]);
         }
     }
